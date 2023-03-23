@@ -94,3 +94,26 @@ class MLP(nn.Module):
 
         return x
     
+
+class Block(nn.Module):
+    """Transformer block"""
+    def __init__(self, dim, n_heads, mlp_ratio=4.0, qkv_bias=True, p=0., attn_p=0.):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(dim, eps=1e-6)
+        self.attn = Attention(dim, n_heads = n_heads, qkv_bias= qkv_bias, attn_p= attn_p, proj_p = p)
+        self.norm2 = nn.LayerNorm(dim, eps=1e-6)
+        hidden_features = int(dim * mlp_ratio)
+        self.mlp = MLP(in_features=dim, hidden_features=hidden_features, out_features=dim)
+
+    def forward(self, x):
+        """Run forward pass
+        Input
+        -----
+        x : torch.Tensor
+            Shape (n_samples, n_patches + 1, dim)
+        """
+        x = x + self.attn(self.norm1(x)) # (n_samples, n_patches + 1, dim)
+        x = x + self.mlp(self.norm2(x)) # (n_samples, n_patches + 1, dim)
+
+        return x
+    
