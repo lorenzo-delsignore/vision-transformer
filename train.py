@@ -4,6 +4,8 @@ import torchmetrics
 import torch.nn.functional as F
 from dataset import CIFAR10DataModule
 from model import VisionTransformer
+from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+
 
 class LightningModel(L.LightningModule):
     def __init__(self, model, learning_rate):
@@ -47,17 +49,32 @@ class LightningModel(L.LightningModule):
         self.log("test acc", self.test_acc)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        optimizer = torch.optim.AdamW(
+            self.parameters(),
+            lr=self.learning_rate * CIFAR10DataModule().batch_size / 512,
+            weight_decay=0.05,
+        )
+        scheduler = LinearWarmupCosineAnnealingLR(
+            optimizer, warmup_epochs=5, max_epochs=60
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "train loss",
+                "interval": "step",
+                "frequency": 1,
+            },
+        }
 
 
 if __name__ == "__main__":
     torch.manual_seed(1)
-    dm = CIFAR10DataModule()
+    dm = CIFAR10DataModule(batch_size=1024)
     model = VisionTransformer(n_classes=10)
-    lightning_model = LightningModel(model=model, learning_rate=0.05)
+    lightning_model = LightningModel(model=model, learning_rate=0.0005)
     trainer = L.Trainer(
-        max_epochs=10, accelerator="auto", devices="auto", deterministic=True
+        max_epochs=60, accelerator="auto", devices="auto", deterministic=True
     )
     trainer.fit(model=lightning_model, datamodule=dm)
     train_acc = trainer.validate(dataloaders=dm.train_dataloader())
