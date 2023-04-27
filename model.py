@@ -92,7 +92,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(hidden_features, out_features)
         self.drop = nn.Dropout(p)
 
-    def foward(self, x):
+    def forward(self, x):
         """Run forward pass
         Input
         -----
@@ -100,7 +100,7 @@ class MLP(nn.Module):
             Shape (n_samples, n_patches + 1, in_features)
         """
         x = self.fc1(x)  # (n_samples, n_patches + 1, hidden features)
-        x = self.act(x)
+        x = self.activation(x)
         x = self.drop(x)
         x = self.fc2(x)  # (n_samples, n_patches + 1, out_features)
         x = self.drop(x)
@@ -141,10 +141,10 @@ class VisionTransformer(nn.Module):
 
     def __init__(
         self,
-        img_size=384,
+        img_size=32,
         patch_size=16,
         in_chans=3,
-        n_classes=1000,
+        n_classes=10,
         embed_dim=768,
         depth=12,
         n_heads=12,
