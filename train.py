@@ -2,9 +2,11 @@ import lightning as L
 import torch
 import torchmetrics
 import torch.nn.functional as F
+import wandb
 from dataset import CIFAR10DataModule
 from model import VisionTransformer
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from lightning.pytorch.loggers import WandbLogger
 
 
 class LightningModel(L.LightningModule):
@@ -69,12 +71,17 @@ class LightningModel(L.LightningModule):
 
 
 def main():
+    wandb.init()
     torch.manual_seed(1)
     dm = CIFAR10DataModule(batch_size=1024)
     model = VisionTransformer(n_classes=10)
     lightning_model = LightningModel(model=model, learning_rate=0.0005)
     trainer = L.Trainer(
-        max_epochs=60, accelerator="auto", devices="auto", deterministic=True
+        max_epochs=60,
+        accelerator="auto",
+        devices="auto",
+        deterministic=True,
+        logger=WandbLogger(),
     )
     trainer.fit(model=lightning_model, datamodule=dm)
     train_acc = trainer.validate(dataloaders=dm.train_dataloader())
