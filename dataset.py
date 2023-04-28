@@ -3,6 +3,7 @@ from torchvision import datasets, transforms
 from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
 from collections import Counter
+from augmentation import GaussianBlur, Solarization
 
 
 class CIFAR10DataModule(L.LightningDataModule):
@@ -17,17 +18,41 @@ class CIFAR10DataModule(L.LightningDataModule):
         datasets.CIFAR10(self.data_dir, train=False, download=True)
 
     def setup(self, stage):
+        train_transform = transforms.Compose(
+            [
+                transforms.Resize(32, interpolation=3),
+                transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomChoice(
+                    [
+                        transforms.RandomApply([transforms.Grayscale(3)], p=1),
+                        transforms.RandomApply([Solarization()], p=1),
+                        transforms.RandomApply([GaussianBlur()], p=1),
+                    ]
+                ),
+                transforms.ColorJitter(0.3, 0.3, 0.3),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
+            ]
+        )
+        test_transform = transforms.Compose(
+            [
+                transforms.Resize(32, interpolation=3),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
+            ]
+        )
         self.cifar10_full = datasets.CIFAR10(
-            self.data_dir, transform=transforms.ToTensor(), train=True
+            self.data_dir, transform=train_transform, train=True
         )
         self.cifar10_train, self.cifar10_val = random_split(
             self.cifar10_full, [40000, 10000]
         )
         self.cifar10_test = datasets.CIFAR10(
-            self.data_dir, transform=transforms.ToTensor(), train=False
+            self.data_dir, transform=test_transform, train=False
         )
         self.cifar10_predict = datasets.CIFAR10(
-            self.data_dir, transform=transforms.ToTensor(), train=False
+            self.data_dir, transform=test_transform, train=False
         )
 
     def train_dataloader(self):
