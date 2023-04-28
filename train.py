@@ -68,7 +68,7 @@ class LightningModel(L.LightningModule):
         }
 
 
-if __name__ == "__main__":
+def main():
     torch.manual_seed(1)
     dm = CIFAR10DataModule(batch_size=1024)
     model = VisionTransformer(n_classes=10)
@@ -83,3 +83,7 @@ if __name__ == "__main__":
     print(
         f"Train accuracy: {train_acc[0]['val acc'] * 100:.2f} | Validation accuracy: {val_acc[0]['val acc'] * 100:.2f} | Test accuracy: {test_acc[0]['test acc'] * 100:.2f}"
     )
+
+
+if __name__ == "__main__":
+    main()
