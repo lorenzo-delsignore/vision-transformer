@@ -7,6 +7,8 @@ from dataset import CIFAR10DataModule
 from model import VisionTransformer
 from lightning.pytorch.loggers import WandbLogger
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from timm.data import Mixup
+from timm.loss import SoftTargetCrossEntropy
 
 
 class LightningModel(L.LightningModule):
@@ -34,7 +36,21 @@ class LightningModel(L.LightningModule):
         return loss, labels, predicted_labels
 
     def training_step(self, batch, batch_idx):
-        loss, labels, predicted_labels = self._shared_step(batch)
+        features, labels = batch
+        mixup_fn = Mixup(
+            mixup_alpha=0.8,
+            cutmix_alpha=1.0,
+            cutmix_minmax=None,
+            prob=1,
+            switch_prob=0.5,
+            mode="batch",
+            label_smoothing=0.1,
+            num_classes=10,
+        )
+        features, one_hot_labels = mixup_fn(features, labels)
+        logits = self.model(features)
+        loss = SoftTargetCrossEntropy()(logits, one_hot_labels)
+        predicted_labels = torch.argmax(logits, dim=1)
         self.log("train loss", loss)
         self.train_acc(predicted_labels, labels)
         self.log(
