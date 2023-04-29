@@ -1,14 +1,15 @@
 import lightning as L
 import torch
-import torchmetrics
 import torch.nn.functional as F
+import torchmetrics
 import wandb
-from dataset import CIFAR10DataModule
-from model import VisionTransformer
 from lightning.pytorch.loggers import WandbLogger
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from timm.data import Mixup
 from timm.loss import SoftTargetCrossEntropy
+
+from dataset import CIFAR10DataModule
+from model import VisionTransformer
 
 
 class LightningModel(L.LightningModule):
