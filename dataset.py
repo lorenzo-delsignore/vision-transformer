@@ -7,7 +7,7 @@ from augmentation import GaussianBlur, Solarization
 
 
 class CIFAR10DataModule(L.LightningDataModule):
-    def __init__(self, data_dir="data/", batch_size=64):
+    def __init__(self, batch_size, data_dir="data/"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -84,7 +84,7 @@ class CIFAR10DataModule(L.LightningDataModule):
 
 
 def main():
-    dm = CIFAR10DataModule()
+    dm = CIFAR10DataModule(batch_size=256)
     # Cound label distributions
     dm.setup("")
     train_counter = Counter()
