@@ -5,8 +5,8 @@ import torch.nn.functional as F
 import wandb
 from dataset import CIFAR10DataModule
 from model import VisionTransformer
-from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from lightning.pytorch.loggers import WandbLogger
+from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 
 
 class LightningModel(L.LightningModule):
@@ -18,6 +18,10 @@ class LightningModel(L.LightningModule):
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=10)
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=10)
         self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=10)
+        self.warmup_epochs = 5
+        self.steps_per_epoch = 52
+        self.max_epochs = 60
+        self.batch_size = 768
 
     def forward(self, x):
         return self.model(x)
@@ -56,26 +60,25 @@ class LightningModel(L.LightningModule):
             lr=self.learning_rate * CIFAR10DataModule().batch_size / 512,
             weight_decay=0.05,
         )
-        scheduler = LinearWarmupCosineAnnealingLR(
-            optimizer, warmup_epochs=5, max_epochs=60
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "train loss",
-                "interval": "step",
-                "frequency": 1,
-            },
+
+        lr_scheduler = {
+            "scheduler": LinearWarmupCosineAnnealingLR(
+                optimizer,
+                warmup_epochs=self.warmup_epochs * self.steps_per_epoch,
+                max_epochs=self.max_epochs * self.steps_per_epoch,
+            ),
+            "monitor": "train loss",
+            "interval": "step",
         }
+        return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 
 
 def main():
     wandb.init()
     torch.manual_seed(1)
-    dm = CIFAR10DataModule(batch_size=1024)
+    dm = CIFAR10DataModule(batch_size=768)
     model = VisionTransformer(n_classes=10)
-    lightning_model = LightningModel(model=model, learning_rate=0.0005)
+    lightning_model = LightningModel(model=model, learning_rate=0.01)
     trainer = L.Trainer(
         max_epochs=60,
         accelerator="auto",
