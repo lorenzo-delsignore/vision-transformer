@@ -55,10 +55,10 @@ class LightningModel(L.LightningModule):
         self.log("test acc", self.test_acc)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(
+        optimizer = torch.optim.SGD(
             self.parameters(),
-            lr=self.learning_rate * CIFAR10DataModule().batch_size / 512,
-            weight_decay=0.05,
+            lr=self.learning_rate,
+            weight_decay=1e-4,
         )
 
         lr_scheduler = {
