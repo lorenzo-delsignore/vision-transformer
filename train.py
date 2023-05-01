@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torchmetrics
 import wandb
 from lightning.pytorch.loggers import WandbLogger
-from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from timm.scheduler import CosineLRScheduler
 from timm.data import Mixup
 from timm.loss import SoftTargetCrossEntropy
 
@@ -23,7 +23,7 @@ class LightningModel(L.LightningModule):
         self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=10)
         self.warmup_epochs = 5
         self.steps_per_epoch = 52
-        self.max_epochs = 60
+        self.max_epochs = 1000
         self.batch_size = 768
 
     def forward(self, x):
@@ -45,49 +45,51 @@ class LightningModel(L.LightningModule):
             prob=1,
             switch_prob=0.5,
             mode="batch",
-            label_smoothing=0.1,
             num_classes=10,
+            label_smoothing=0.1,
         )
-        features, one_hot_labels = mixup_fn(features, labels)
+        features, smoothing_labels = mixup_fn(features, labels)
         logits = self.model(features)
-        loss = SoftTargetCrossEntropy()(logits, one_hot_labels)
+        loss = SoftTargetCrossEntropy()(logits, smoothing_labels)
+        self.log("train_loss", loss)
         predicted_labels = torch.argmax(logits, dim=1)
-        self.log("train loss", loss)
         self.train_acc(predicted_labels, labels)
-        self.log(
-            "train acc", self.train_acc, prog_bar=True, on_epoch=True, on_step=False
-        )
+        self.log("train_acc", self.train_acc, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         loss, labels, predicted_labels = self._shared_step(batch)
-        self.log("val loss", loss, prog_bar=True)
+        self.log("val_loss", loss, prog_bar=True)
         self.val_acc(predicted_labels, labels)
-        self.log("val acc", self.val_acc, prog_bar=True)
+        self.log("val_acc", self.val_acc, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         loss, labels, predicted_labels = self._shared_step(batch)
         self.test_acc(predicted_labels, labels)
-        self.log("test acc", self.test_acc)
+        self.log("test_acc", self.test_acc)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(
+        optimizer = torch.optim.AdamW(
             self.parameters(),
             lr=self.learning_rate,
-            weight_decay=1e-4,
+            weight_decay=0.05,
         )
+        scheduler = CosineLRScheduler(
+            optimizer,
+            warmup_t=self.warmup_epochs,
+            t_initial=self.max_epochs,
+            lr_min=1e-5,
+            warmup_lr_init=1e-6,
+            t_in_epochs=True,
+        )
+        return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
 
-        lr_scheduler = {
-            "scheduler": LinearWarmupCosineAnnealingLR(
-                optimizer,
-                warmup_epochs=self.warmup_epochs * self.steps_per_epoch,
-                max_epochs=self.max_epochs * self.steps_per_epoch,
-            ),
-            "monitor": "train loss",
-            "interval": "step",
-        }
-        return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
+    def lr_scheduler_step(self, scheduler, optimizer_idx):
+        print(self.current_epoch)
+        scheduler.step(
+            epoch=self.current_epoch
+        )  # timm's scheduler need the epoch value
 
 
 def main():
@@ -95,9 +97,9 @@ def main():
     torch.manual_seed(1)
     dm = CIFAR10DataModule(batch_size=768)
     model = VisionTransformer(n_classes=10)
-    lightning_model = LightningModel(model=model, learning_rate=0.01)
+    lightning_model = LightningModel(model=model, learning_rate=5e-4 * 1.5)
     trainer = L.Trainer(
-        max_epochs=60,
+        max_epochs=1000,
         accelerator="auto",
         devices="auto",
         deterministic=True,
