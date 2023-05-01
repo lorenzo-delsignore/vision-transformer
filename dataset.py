@@ -1,8 +1,8 @@
+from collections import Counter
 import lightning as L
 from torchvision import datasets, transforms
 from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
-from collections import Counter
 from torch.utils.data.sampler import SequentialSampler
 
 from sampler import RASampler
