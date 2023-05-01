@@ -3,7 +3,6 @@ from torchvision import datasets, transforms
 from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
 from collections import Counter
-from augmentation import GaussianBlur, Solarization
 from sampler import RASampler
 
 
@@ -21,24 +20,14 @@ class CIFAR10DataModule(L.LightningDataModule):
     def setup(self, stage):
         train_transform = transforms.Compose(
             [
-                transforms.Resize(32, interpolation=3),
-                transforms.RandomCrop(32, padding=4, padding_mode="reflect"),
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomChoice(
-                    [
-                        transforms.RandomApply([transforms.Grayscale(3)], p=1),
-                        transforms.RandomApply([Solarization()], p=1),
-                        transforms.RandomApply([GaussianBlur()], p=1),
-                    ]
-                ),
-                transforms.ColorJitter(0.3, 0.3, 0.3),
+                transforms.AutoAugment(policy=transforms.AutoAugmentPolicy.CIFAR10),
+                transforms.RandAugment(9),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
             ]
         )
         test_transform = transforms.Compose(
             [
-                transforms.Resize(32, interpolation=3),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
             ]
