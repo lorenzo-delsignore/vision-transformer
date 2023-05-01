@@ -40,6 +40,7 @@ class CIFAR10DataModule(L.LightningDataModule):
         self.cifar10_train, self.cifar10_val = random_split(
             self.cifar10_full, [40000, 10000]
         )
+        self.cifar10_val.transforms = test_transform
         self.cifar10_test = datasets.CIFAR10(
             self.data_dir, transform=test_transform, train=False
         )
