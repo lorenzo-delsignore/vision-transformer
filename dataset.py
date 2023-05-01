@@ -3,6 +3,8 @@ from torchvision import datasets, transforms
 from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
 from collections import Counter
+from torch.utils.data.sampler import SequentialSampler
+
 from sampler import RASampler
 
 
@@ -56,12 +58,20 @@ class CIFAR10DataModule(L.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            self.cifar10_val, batch_size=self.batch_size, shuffle=False, num_workers=1
+            self.cifar10_val,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=3,
+            sampler=SequentialSampler(self.cifar10_val),
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.cifar10_test, batch_size=self.batch_size, shuffle=False, num_workers=1
+            self.cifar10_test,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=3,
+            sampler=SequentialSampler(self.cifar10_test),
         )
 
     def predict_dataloader(self):
