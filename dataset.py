@@ -4,6 +4,7 @@ from torch.utils.data.dataset import random_split
 from torch.utils.data import DataLoader
 from collections import Counter
 from augmentation import GaussianBlur, Solarization
+from sampler import RASampler
 
 
 class CIFAR10DataModule(L.LightningDataModule):
@@ -59,9 +60,9 @@ class CIFAR10DataModule(L.LightningDataModule):
         return DataLoader(
             self.cifar10_train,
             batch_size=self.batch_size,
-            shuffle=True,
             drop_last=True,
-            num_workers=1,
+            num_workers=3,
+            sampler=RASampler(self.cifar10_train, num_replicas=1, rank=0, shuffle=True),
         )
 
     def val_dataloader(self):
