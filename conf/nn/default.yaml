@@ -5,21 +5,18 @@ data:
     train:
       _target_: vision_transformer.data.dataset.MyDataset
 
-#    val:
-#      - _target_: vision_transformer.data.dataset.MyDataset
-
     test:
-      - _target_: vision_transformer.data.dataset.MyDataset
+      _target_: vision_transformer.data.dataset.MyDataset
 
   gpus: ${train.trainer.gpus}
 
   num_workers:
-    train: 8
+    train: 4
     val: 4
     test: 4
 
   batch_size:
-    train: 32
+    train: 16
     val: 16
     test: 16
 
@@ -27,21 +24,18 @@ data:
   val_percentage: 0.1
 
 module:
-  _target_: vision_transformer.pl_modules.pl_module.MyLightningModule
+  _target_: vision_transformer.pl_modules.pl_module.LightningModel
 
   optimizer:
-    #  Adam-oriented deep learning
-    _target_: torch.optim.Adam
-    #  These are all default parameters for the Adam optimizer
-    lr: 0.001
+    _target_: torch.optim.AdamW
+    lr: 7.5e-4
     betas: [ 0.9, 0.999 ]
     eps: 1e-08
-    weight_decay: 0
+    weight_decay: 0.05
 
   lr_scheduler:
-    _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
-    T_0: 10
-    T_mult: 2
-    eta_min: 0 # min value for the lr
-    last_epoch: -1
-    verbose: False
+    _target_: timm.scheduler.CosineLRScheduler
+    warmup_t: 5
+    t_initial: 1000
+    lr_min: 1e-5
+    warmup_lr_init: 1e-6
