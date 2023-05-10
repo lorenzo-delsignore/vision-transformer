@@ -3,3 +3,4 @@ lightning_logs
 data
 wandb
 storage
+vision_transformer.egg-info
