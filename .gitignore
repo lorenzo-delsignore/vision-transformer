@@ -4,3 +4,4 @@ data
 wandb
 storage
 vision_transformer.egg-info
+_version.py
