@@ -31,7 +31,7 @@ Setup the development environment:
 git clone git@github.com:lorenzo-delsignore/vision-transformer.git
 cd vision-transformer
 conda env create -f env.yaml
-conda activate vision-transformer
+conda activate vision_transformer
 pre-commit install
 ```
 
