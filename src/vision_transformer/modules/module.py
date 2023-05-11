@@ -3,7 +3,9 @@ import torch.nn as nn
 
 
 class PatchEmbed(nn.Module):
-    """Split image into patches and embed them"""
+    """
+    Split image into patches and embed them.
+    """
 
     def __init__(self, img_size, patch_size, in_chans=3, embed_dim=768):
         super().__init__()
@@ -15,8 +17,10 @@ class PatchEmbed(nn.Module):
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
 
     def forward(self, x):
-        """Run forward pass
-        Input
+        """
+        Run forward pass.
+
+        Input:
         -----
         x : torch.Tensor
             Shape (n_samples, in_chans, img_size, img_size)
@@ -28,7 +32,9 @@ class PatchEmbed(nn.Module):
 
 
 class Attention(nn.Module):
-    """Attention mechanism."""
+    """
+    Attention mechanism.
+    """
 
     def __init__(self, dim, n_heads=12, qkv_bias=True, attn_p=0.0, proj_p=0.0):
         super().__init__()
@@ -43,8 +49,10 @@ class Attention(nn.Module):
         self.proj_drop = nn.Dropout(proj_p)
 
     def forward(self, x):
-        """Run forward pass
-        Input
+        """
+        Run forward pass.
+
+        Input:
         -----
         x : torch.Tensor
             Shape (n_samples, n_patches + 1, dim)
@@ -75,7 +83,9 @@ class Attention(nn.Module):
 
 
 class MLP(nn.Module):
-    """Multilayer perceptron"""
+    """
+    Multilayer perceptron.
+    """
 
     def __init__(self, in_features, hidden_features, out_features, p=0.0):
         super().__init__()
@@ -85,8 +95,10 @@ class MLP(nn.Module):
         self.drop = nn.Dropout(p)
 
     def forward(self, x):
-        """Run forward pass
-        Input
+        """
+        Run forward pass.
+
+        Input:
         -----
         x : torch.Tensor
             Shape (n_samples, n_patches + 1, in_features)
@@ -101,7 +113,9 @@ class MLP(nn.Module):
 
 
 class Block(nn.Module):
-    """Transformer block"""
+    """
+    Transformer block.
+    """
 
     def __init__(self, dim, n_heads, mlp_ratio=4.0, qkv_bias=True, p=0.0, attn_p=0.0):
         super().__init__()
@@ -112,8 +126,10 @@ class Block(nn.Module):
         self.mlp = MLP(in_features=dim, hidden_features=hidden_features, out_features=dim)
 
     def forward(self, x):
-        """Run forward pass
-        Input
+        """
+        Run forward pass.
+
+        Input:
         -----
         x : torch.Tensor
             Shape (n_samples, n_patches + 1, dim)
@@ -125,7 +141,9 @@ class Block(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    """Vision transformer"""
+    """
+    Vision transformer.
+    """
 
     def __init__(
         self,
@@ -169,9 +187,11 @@ class VisionTransformer(nn.Module):
         self.head = nn.Linear(embed_dim, n_classes)
 
     def forward(self, x):
-        """Run forward pass
-        Input
-        ----
+        """
+        Run forward pass.
+
+        Input:
+        -----
         x : torch.Tensor
             Shape (n_samples, in_chans, img_size, img_size)
         """
