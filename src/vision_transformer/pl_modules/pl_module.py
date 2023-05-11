@@ -12,7 +12,6 @@ from timm.scheduler import CosineLRScheduler
 from nn_core.common import PROJECT_ROOT
 from nn_core.model_logging import NNLogger
 
-
 from vision_transformer.modules.module import VisionTransformer
 
 pylogger = logging.getLogger(__name__)
