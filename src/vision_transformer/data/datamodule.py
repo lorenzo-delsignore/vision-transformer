@@ -3,18 +3,14 @@ from collections import Counter
 from functools import cached_property, partial
 
 import hydra
-import omegaconf
 import pytorch_lightning as pl
-from omegaconf import DictConfig
 from torch.utils.data import DataLoader, random_split
-from torch.utils.data.dataloader import SequentialSampler, default_collate
-from torchvision import datasets, transforms
+from torch.utils.data.dataloader import default_collate
+from torchvision import transforms
 
 from nn_core.common import PROJECT_ROOT
-from nn_core.model_logging import NNLogger
 
 from .augmentation import GaussianBlur, Solarization
-from .sampler import RASampler
 
 pylogger = logging.getLogger(__name__)
 
