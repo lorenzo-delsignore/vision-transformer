@@ -100,8 +100,6 @@ class MyDataModule(pl.LightningDataModule):
             self.train_dataset, self.val_dataset = random_split(cifar10_train, [train_length, val_length])
             self.val_dataset.transforms = test_transform
 
-            print("ECCCOMI QUA MANNAGGIA LA PUTTANA")
-
         if stage is None or stage == "test":
             self.test_dataset = hydra.utils.instantiate(
                 self.datasets.test,
