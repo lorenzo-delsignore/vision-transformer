@@ -74,10 +74,10 @@ class MyDataModule(pl.LightningDataModule):
         train_transform = transforms.Compose(
             [
                 transforms.Resize(224, interpolation=3),
-                transforms.RandomCrop(224, padding=4,padding_mode='reflect'),
+                transforms.RandomCrop(224, padding=4, padding_mode="reflect"),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomChoice([Solarization(),GaussianBlur()]),
-                transforms.ColorJitter(0.3,0.3,0.3),
+                transforms.RandomChoice([Solarization(), GaussianBlur()]),
+                transforms.ColorJitter(0.3, 0.3, 0.3),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
             ]
@@ -118,7 +118,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.train,
             num_workers=self.num_workers.train,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="train", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="train", metadata=self.metadata),
         )
 
     def val_dataloader(self):
@@ -128,7 +128,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.val,
             num_workers=self.num_workers.val,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="val", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="val", metadata=self.metadata),
         )
 
     def test_dataloader(self):
@@ -138,7 +138,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.test,
             num_workers=self.num_workers.test,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="test", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="test", metadata=self.metadata),
         )
 
     def __repr__(self) -> str:

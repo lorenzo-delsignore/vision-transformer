@@ -30,7 +30,7 @@ class LightningModel(pl.LightningModule):
         self.train_accuracy = metric.clone()
         self.val_accuracy = metric.clone()
         self.test_accuracy = metric.clone()
-        self.model = VisionTransformer(img_size=224,n_classes=10)
+        self.model = VisionTransformer(img_size=224, n_classes=10)
 
     def forward(self, x):
         return self.model(x)
@@ -64,7 +64,6 @@ class LightningModel(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
-
 
         self.train_accuracy(torch.softmax(step_out["logits"], dim=-1), labels)
         self.log_dict(
@@ -126,7 +125,7 @@ class LightningModel(pl.LightningModule):
             t_in_epochs=True,
         )
         return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
-    
+
     def configure_optimizers(self):
         opt = hydra.utils.instantiate(self.hparams.optimizer, params=self.parameters(), _convert_="partial")
         if "lr_scheduler" not in self.hparams:
@@ -135,9 +134,7 @@ class LightningModel(pl.LightningModule):
         return [opt], [{"scheduler": scheduler, "interval": "epoch"}]
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
-      
         scheduler.step(epoch=self.current_epoch)  # timm's scheduler need the epoch value
-
 
 
 @hydra.main(config_path=str(PROJECT_ROOT / "conf"), config_name="default", version_base=None)
