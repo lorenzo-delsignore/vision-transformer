@@ -1,16 +1,18 @@
 import logging
+
 import hydra
 import omegaconf
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 import torchmetrics
-from nn_core.common import PROJECT_ROOT
-from nn_core.model_logging import NNLogger
-from torch.optim import Optimizer
-from timm.scheduler import CosineLRScheduler
 from timm.data import Mixup
 from timm.loss import SoftTargetCrossEntropy
+from timm.scheduler import CosineLRScheduler
+from torch.optim import Optimizer
+
+from nn_core.common import PROJECT_ROOT
+from nn_core.model_logging import NNLogger
 
 from vision_transformer.data.datamodule import MetaData
 from vision_transformer.modules.module import VisionTransformer
