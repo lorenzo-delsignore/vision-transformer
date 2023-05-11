@@ -10,7 +10,7 @@ from torchvision import transforms
 
 from nn_core.common import PROJECT_ROOT
 
-from .augmentation import GaussianBlur, Solarization
+from vision_transformer.data.augmentation import GaussianBlur, Solarization
 
 pylogger = logging.getLogger(__name__)
 
