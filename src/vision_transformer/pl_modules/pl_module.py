@@ -1,18 +1,17 @@
 import logging
+
 import hydra
 import omegaconf
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 import torchmetrics
+from timm.loss import SoftTargetCrossEntropy
+from timm.scheduler import CosineLRScheduler
+
 from nn_core.common import PROJECT_ROOT
 from nn_core.model_logging import NNLogger
-from torch.optim import Optimizer
-from timm.scheduler import CosineLRScheduler
-from timm.data import Mixup
-from timm.loss import SoftTargetCrossEntropy
 
-from vision_transformer.data.datamodule import MetaData
 from vision_transformer.modules.module import VisionTransformer
 
 pylogger = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ class LightningModel(pl.LightningModule):
         self.train_accuracy = metric.clone()
         self.val_accuracy = metric.clone()
         self.test_accuracy = metric.clone()
-        self.model = VisionTransformer(img_size=224,n_classes=10)
+        self.model = VisionTransformer(img_size=224, n_classes=10)
 
     def forward(self, x):
         return self.model(x)
@@ -64,7 +63,6 @@ class LightningModel(pl.LightningModule):
             on_epoch=True,
             prog_bar=True,
         )
-
 
         self.train_accuracy(torch.softmax(step_out["logits"], dim=-1), labels)
         self.log_dict(
@@ -126,7 +124,7 @@ class LightningModel(pl.LightningModule):
             t_in_epochs=True,
         )
         return [optimizer], [{"scheduler": scheduler, "interval": "epoch"}]
-    
+
     def configure_optimizers(self):
         opt = hydra.utils.instantiate(self.hparams.optimizer, params=self.parameters(), _convert_="partial")
         if "lr_scheduler" not in self.hparams:
@@ -135,9 +133,7 @@ class LightningModel(pl.LightningModule):
         return [opt], [{"scheduler": scheduler, "interval": "epoch"}]
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
-      
         scheduler.step(epoch=self.current_epoch)  # timm's scheduler need the epoch value
-
 
 
 @hydra.main(config_path=str(PROJECT_ROOT / "conf"), config_name="default", version_base=None)
@@ -156,32 +152,3 @@ def main(cfg: omegaconf.DictConfig) -> None:
 
 if __name__ == "__main__":
     main()
-'''
-
-def main():
-    wandb.init()
-    torch.manual_seed(1)
-    dm = CIFAR10DataModule(batch_size=768)
-    model = VisionTransformer(n_classes=10)
-    lightning_model = LightningModel(model=model, learning_rate=5e-4 * 1.5)
-    trainer = L.Trainer(
-        max_epochs=1000,
-        accelerator="auto",
-        devices="auto",
-        deterministic=True,
-        logger=WandbLogger(),
-    )
-    trainer.fit(model=lightning_model, datamodule=dm)
-    train_acc = trainer.validate(dataloaders=dm.train_dataloader())
-    val_acc = trainer.validate(datamodule=dm)
-    test_acc = trainer.test(datamodule=dm)
-    print(
-        f"Train accuracy: {train_acc[0]['val acc'] * 100:.2f} | Validation accuracy: {val_acc[0]['val acc'] * 100:.2f} | Test accuracy: {test_acc[0]['test acc'] * 100:.2f}"
-    )
-
-
-if __name__ == "__main__":
-    main()
-
-
-'''

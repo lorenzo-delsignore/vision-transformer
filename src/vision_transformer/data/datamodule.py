@@ -1,17 +1,15 @@
 import logging
-from functools import cached_property, partial
 from collections import Counter
-import hydra
-import omegaconf
-import pytorch_lightning as pl
-from omegaconf import DictConfig
-from nn_core.common import PROJECT_ROOT
-from nn_core.model_logging import NNLogger
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, random_split
-from torch.utils.data.dataloader import SequentialSampler, default_collate
+from functools import cached_property, partial
 
-from .sampler import RASampler
+import hydra
+import pytorch_lightning as pl
+from torch.utils.data import DataLoader, random_split
+from torch.utils.data.dataloader import default_collate
+from torchvision import transforms
+
+from nn_core.common import PROJECT_ROOT
+
 from .augmentation import GaussianBlur, Solarization
 
 pylogger = logging.getLogger(__name__)
@@ -74,10 +72,10 @@ class MyDataModule(pl.LightningDataModule):
         train_transform = transforms.Compose(
             [
                 transforms.Resize(224, interpolation=3),
-                transforms.RandomCrop(224, padding=4,padding_mode='reflect'),
+                transforms.RandomCrop(224, padding=4, padding_mode="reflect"),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomChoice([Solarization(),GaussianBlur()]),
-                transforms.ColorJitter(0.3,0.3,0.3),
+                transforms.RandomChoice([Solarization(), GaussianBlur()]),
+                transforms.ColorJitter(0.3, 0.3, 0.3),
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
             ]
@@ -102,8 +100,6 @@ class MyDataModule(pl.LightningDataModule):
             self.train_dataset, self.val_dataset = random_split(cifar10_train, [train_length, val_length])
             self.val_dataset.transforms = test_transform
 
-            print("ECCCOMI QUA MANNAGGIA LA PUTTANA")
-
         if stage is None or stage == "test":
             self.test_dataset = hydra.utils.instantiate(
                 self.datasets.test,
@@ -118,7 +114,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.train,
             num_workers=self.num_workers.train,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="train", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="train", metadata=self.metadata),
         )
 
     def val_dataloader(self):
@@ -128,7 +124,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.val,
             num_workers=self.num_workers.val,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="val", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="val", metadata=self.metadata),
         )
 
     def test_dataloader(self):
@@ -138,7 +134,7 @@ class MyDataModule(pl.LightningDataModule):
             batch_size=self.batch_size.test,
             num_workers=self.num_workers.test,
             pin_memory=self.pin_memory,
-            collate_fn=partial(collate_fn, split="test", metadata=self.metadata)
+            collate_fn=partial(collate_fn, split="test", metadata=self.metadata),
         )
 
     def __repr__(self) -> str:
