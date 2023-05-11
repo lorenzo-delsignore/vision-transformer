@@ -156,32 +156,3 @@ def main(cfg: omegaconf.DictConfig) -> None:
 
 if __name__ == "__main__":
     main()
-'''
-
-def main():
-    wandb.init()
-    torch.manual_seed(1)
-    dm = CIFAR10DataModule(batch_size=768)
-    model = VisionTransformer(n_classes=10)
-    lightning_model = LightningModel(model=model, learning_rate=5e-4 * 1.5)
-    trainer = L.Trainer(
-        max_epochs=1000,
-        accelerator="auto",
-        devices="auto",
-        deterministic=True,
-        logger=WandbLogger(),
-    )
-    trainer.fit(model=lightning_model, datamodule=dm)
-    train_acc = trainer.validate(dataloaders=dm.train_dataloader())
-    val_acc = trainer.validate(datamodule=dm)
-    test_acc = trainer.test(datamodule=dm)
-    print(
-        f"Train accuracy: {train_acc[0]['val acc'] * 100:.2f} | Validation accuracy: {val_acc[0]['val acc'] * 100:.2f} | Test accuracy: {test_acc[0]['test acc'] * 100:.2f}"
-    )
-
-
-if __name__ == "__main__":
-    main()
-
-
-'''
