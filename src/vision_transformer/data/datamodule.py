@@ -25,7 +25,8 @@ class MetaData:
             "\n".join(f"{key}\t{value}" for key, value in self.class_vocab.items())
         )
 
-    def load(self, src_path):
+    @staticmethod
+    def load(src_path):
         pylogger.debug(f"Loading MetaData from {src_path}")
         lines = (src_path / "class_vocab.tsv").read_text(encoding="utf-8").splitlines()
         class_vocab = {}
