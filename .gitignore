@@ -1,6 +1,6 @@
 __pycache__
 lightning_logs
-data
+/data
 wandb
 storage
 vision_transformer.egg-info
