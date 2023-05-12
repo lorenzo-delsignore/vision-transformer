@@ -1,0 +1,7 @@
+__pycache__
+lightning_logs
+/data
+wandb
+storage
+vision_transformer.egg-info
+_version.py
