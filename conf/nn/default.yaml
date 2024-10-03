@@ -1,0 +1,41 @@
+data:
+  _target_: vision_transformer.data.datamodule.MyDataModule
+
+  datasets:
+    train:
+      _target_: vision_transformer.data.dataset.MyDataset
+
+    test:
+      _target_: vision_transformer.data.dataset.MyDataset
+
+  gpus: ${train.trainer.gpus}
+
+  num_workers:
+    train: 4
+    val: 4
+    test: 4
+
+  batch_size:
+    train: 16
+    val: 16
+    test: 16
+
+  # example
+  val_percentage: 0.1
+
+module:
+  _target_: vision_transformer.pl_modules.pl_module.LightningModel
+
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 7.5e-4
+    betas: [ 0.9, 0.999 ]
+    eps: 1e-08
+    weight_decay: 0.05
+
+  lr_scheduler:
+    _target_: timm.scheduler.CosineLRScheduler
+    warmup_t: 5
+    t_initial: 1000
+    lr_min: 1e-5
+    warmup_lr_init: 1e-6
